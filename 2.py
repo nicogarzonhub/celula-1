@@ -1,25 +1,16 @@
 import json
-
-
 # Cargar datos desde JSON
-
 def cargar_datos():
     try:
         with open("estudiantes.json", "r") as archivo:
             return json.load(archivo)
     except:
         return []
-
-
-
 # Guardar datos en JSON
 
 def guardar_datos():
     with open("estudiantes.json", "w") as archivo:
         json.dump(estudiantes, archivo)
-
-
-
 # LISTA PRINCIPAL
 
 estudiantes = cargar_datos()
@@ -30,17 +21,16 @@ id_actual = max([e["id"] for e in estudiantes], default=0)
 # Registrar estudiante
 
 def registrar_estudiante():
-    global id_actual  
-
+    global id_actual
     nombre = input("Escribe el nombre del estudiante: ")
-
-    id_actual += 1
-    estudiante = {"id": id_actual, "nombre": nombre}
-
-    estudiantes.append(estudiante)
-    guardar_datos()
-
-    print(" Estudiante agregado!\n")
+    while nombre != "":
+        id_actual += 1
+        estudiante = {"id": id_actual, "nombre": nombre}
+        estudiantes.append(estudiante)
+        guardar_datos()
+        print(" Estudiante agregado!\n")
+        print("Para dejar de añadir estudiantes, presione enter sin ingresar nada")
+        nombre = input("Escribe el nombre del estudiante: ")
 
 def mostrar_estudiante():
     if len(estudiantes) == 0:
