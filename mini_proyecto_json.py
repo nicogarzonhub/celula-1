@@ -9,51 +9,72 @@ def cargar_datos():
     estudiantes = {}
     try:
         df = pd.read_excel("lista_estudiantes.xlsx", sheet_name=0) #leer el archivo excel
-        columnas = df.columns #Guardar las columnas
-        arreglo = df.__array__(); #Guardar los datos pertenecientes a cada columna
-        
-        with open("estudiantes.json", "w") as archivo:
-            json.dump(estudiantes, archivo)
+        json_string = df.to_json()
+        with open("estudiantes.json", "w") as archivo: #Se abre el JSON
+            archivo.write(json_string) #Se sobrescriben los datos en el excel en el JSON
+        with open("estudiantes.json", "r") as archivo:
+            return json.load(archivo)
     except: #En caso de que no existan elementos dentro del excel
         return estudiantes
-# Guardar datos en JSON
 
+# Guardar datos en JSON y excel
 def guardar_datos():
-    with open("estudiantes.json", "w") as archivo:
-        json.dump(estudiantes, archivo)
+    try:
+        with open("estudiantes.json", "w") as archivo:
+            json.dump(estudiantes, archivo)
+    except:
+        print("Ha ocurrido un error y no se han podido guardar los datos")
+#guardar un estudiante individual en el archivo de excel
+def guardar_en_excel(id, nombre, edad, cedula): 
+    df = pd.read_excel("lista_estudiantes.xlsx", sheet_name=0)
+    df.loc[id_actual,"ID"] = id #Manera de guardar por pandas en Excel
+    df.loc[id_actual,"Nombre"] = nombre
+    df.loc[id_actual,"Edad"] = int(edad)
+    df.loc[id_actual,"C\u00e9dula"] = cedula #Caracter \u00e9 por "é".
+
+    df.to_excel("lista_estudiantes.xlsx", sheet_name=0, index=False)
 # LISTA PRINCIPAL
-
 estudiantes = cargar_datos()
+# Calcular último ID, para sistema de ID con autoaumento
+id_actual = int(max([e for e in estudiantes["ID"]], default=0))
 
-# Calcular último ID
-id_actual = max([e["id"] for e in estudiantes], default=0)
+def registrar_cedula(cedula): #Función para asegurar que la cedula ingresada no exista previamente, y por tanto, sean unicas
+    try:
+        cedula = int(cedula)
+    except:
+        return registrar_cedula(input("El valor de cedula que ha ingresado es inválido, ingrese otro: "))
+    if cedula in estudiantes["C\u00e9dula"]:
+        return  registrar_cedula(input("La cedula que ha ingresado ya existe, ingrese una diferente: "))
+    else:
+        return cedula
 
-# Registrar estudiante
-
-def registrar_estudiante():
+def registrar_estudiante(): #Función para registrar un estudiante nuevo
     global id_actual
     nombre = input("Escribe el nombre del estudiante: ")
-    edad = input("Ingrese su edad ")
+    edad = input("Ingrese edad del estudiante: ") if nombre != "" else None
+    cedula = registrar_cedula(input("Ingrese cédula del estudiante: ")) if nombre != "" else None
     while nombre != "":
         id_actual += 1
-        estudiante = {"id": id_actual, "nombre": nombre,"edad": edad}
-        
-        estudiantes.append(estudiante)
-        guardar_datos()
+        estudiantes["ID"][id_actual] = id_actual #Manera de guardar por pandas en Excel
+        estudiantes["Nombre"][id_actual] = nombre
+        estudiantes["Edad"][id_actual] = edad
+        estudiantes["C\u00e9dula"][id_actual] = cedula #Caracter \u00e9 por "é"
+        guardar_datos() #Guardar en el JSON actual
+        guardar_en_excel(id_actual, nombre, edad, cedula) #Guardar en excel
         print(" Estudiante agregado!\n")
         print("Para dejar de añadir estudiantes, presione enter sin ingresar nada")
         nombre = input("Escribe el nombre del estudiante: ")
-        edad = input("Ingrese su edad ") if nombre != "" else None
+        edad = input("Ingrese edad del estudiante: ") if nombre != "" else None
+        cedula = input("Ingrese cédula del estudiante: ") if nombre != "" else None
 
 def mostrar_estudiante():
-    if len(estudiantes) == 0:
+    if len(estudiantes["ID"]) == 0:
         print("No hay estudiantes todavía\n")
     else:
         print("\n Lista de estudiantes:")
-        for e in estudiantes:
-            print(f'ID: {e["id"]} - Nombre: {e["nombre"]}')
+        for e in estudiantes["ID"]: #por ID en estudiantes columna ID
+            print(f'ID: {e} - Nombre: {estudiantes["Nombre"][e]} - Edad: {estudiantes["Edad"][e]} - Cedula: {estudiantes["C\u00e9dula"][e]}')
         print()
-
 
 # Eliminar estudiante por ID
 
