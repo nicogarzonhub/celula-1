@@ -1,24 +1,21 @@
-import json
-import pandas as pd
-# Leer un archivo Excel
-df = pd.read_excel("lista_estudiantes.xlsx", sheet_name=0)
+#El siguiente programa es ineficiente, desde que lee un archivo excel y lo transforma en JSON
+import json #Importar libreria json para manipular archivos JSON
+import pandas as pd #Importar pandas para manipular archivos excel
 
-df.to_json("datos.json", orient="records", force_ascii=False)
-
-print("Archivo JSON creado: datos.json")
-
-df.to_json("datos_actualizados.json", orient="records", force_ascii=False)
-
-print("Archivo JSON actualizado creado: datos_actualizados.json")
-
-
+#Pasar los datos de excel a JSON (Sobrescribiendo el JSON previo)
 # Cargar datos desde JSON
 def cargar_datos():
+    # Leer un archivo Excel
+    estudiantes = {}
     try:
-        with open("estudiantes.json", "r") as archivo:
-            return json.load(archivo)
-    except:
-        return []
+        df = pd.read_excel("lista_estudiantes.xlsx", sheet_name=0) #leer el archivo excel
+        columnas = df.columns #Guardar las columnas
+        arreglo = df.__array__(); #Guardar los datos pertenecientes a cada columna
+        
+        with open("estudiantes.json", "w") as archivo:
+            json.dump(estudiantes, archivo)
+    except: #En caso de que no existan elementos dentro del excel
+        return estudiantes
 # Guardar datos en JSON
 
 def guardar_datos():
